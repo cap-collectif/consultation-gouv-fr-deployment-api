@@ -7,7 +7,7 @@ This document is a proposed specification for the deployment APIs that consultat
 ## Terms & vocabulary
 
  * the "*platform*": the OGP Toolbox platform ;
- * the "*provider(s)*": the SaaS consultation provider service.
+ * the "*provider(s)*": the SaaS consultation provider service(s).
 
 ## Proposal
 
@@ -39,7 +39,7 @@ The basic deployment workflow includes several steps:
  * 3- the provider's `/instances` creation endpoint is called by the *platform*, which then displays an informative message to the user ;
  * 4- the *provider* deploys the instance - this is done asynchronously. Once completed, the deployment status and metadata are sent to the *platform*'s `/instances/{instanceId}` endpoint using http's `PATCH` method. The "metadata" is a flat key-value array, which may contain several informations that the *provider* could find interesting to communicate to the *platform* (admin interface url, admin username, admin password, instance creation duration, http authentication credentials, etc.)
 
-Additional instance-lifecycle management operations have not been documented using this workflow. Here there are:
+Additional instance-lifecycle management operations have not been documented using this workflow but could be useful in the future. Here are some ideas:
 
  * request the termination of an instance (already documented in the swagger files) ;
  * force the immediate termination of an instance ;
@@ -54,13 +54,15 @@ You may use the [Swagger editor](http://editor.swagger.io/) to read the specific
  * [see the *providers* API definition](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/cap-collectif/consultation-gouv-fr-deployment-api/master/provider.swagger.yml) ;
  * [see the *platform*'s API definition](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/cap-collectif/consultation-gouv-fr-deployment-api/master/platform.swagger.yml) ;
 
+You may generate implementations of both APIs clients in various languages by using the [Swagger codegen](https://github.com/swagger-api/swagger-codegen) tool.
+
 ## Provider referencing requirements
 
 In order to reference a *provider*, the *platform* requires several informations:
 
  * `api endpoint`: API domain and path ;
- * does the *provider* support custom email-senders? (à la "XYZ@example.consultation.gouv.fr") If yes:
-   * SPF: the OGP toolbox could either completely use the provider's SPF entries (`v=spf1 redirect=sample.cap-collectif.com`) or choose to include its rules (`v=spf1 include:sample.cap-collectif.com -all`). The latter could allow more flexibility to the *platform* but has some downsides ;
+ * does the *provider* support custom email-senders? (à la "XYZ@exampleXYZ123.consultation.gouv.fr") If yes:
+   * SPF: the OGP toolbox could either completely use the provider's SPF entries (`v=spf1 redirect=sample.cap-collectif.com`) or choose to include its rules (`v=spf1 include:sample.cap-collectif.com -all`). The latter could allow more flexibility to the *platform* but may have some readibility downsides ;
    * DKIM: this entry can only be added using informations given by the *provider* once the initial deployment has been done (the *provider* may use third-party mailing services). There is no good solution for this, except maybe allowing the *providers* to change their SPF and DKIM entries through a platform-exposed API.
  * what must be the `CNAME` target for the test-domains used for this *provider*?
 
@@ -69,6 +71,7 @@ In order to reference a *provider*, the *platform* requires several informations
  * how to handle DNS load balancing accross several CNAMEs?
  * error samples
  * logging and auditing?
+ * DKIM
 
 ## Contributing
 

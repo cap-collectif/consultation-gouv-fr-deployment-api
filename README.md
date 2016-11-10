@@ -49,7 +49,10 @@ Additional instance-lifecycle management operations have not been documented usi
 
 The OpenAPI (Swagger) specification is an API description format which allows to describe an API in a non-ambiguous and very precise way.
 
-You may use the [Swagger editor](http://editor.swagger.io/) to read the specification in a more graphical way.
+You may use the [Swagger editor](http://editor.swagger.io/) to read the specification in a more graphical way:
+
+ * [see the *providers* API definition](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/cap-collectif/consultation-gouv-fr-deployment-api/master/provider.swagger.yml) ;
+ * [see the *platform*'s API definition](http://editor.swagger.io/#/?import=https://raw.githubusercontent.com/cap-collectif/consultation-gouv-fr-deployment-api/master/platform.swagger.yml) ;
 
 ## Provider referencing requirements
 
@@ -61,9 +64,11 @@ In order to reference a *provider*, the *platform* requires several informations
    * DKIM: this entry can only be added using informations given by the *provider* once the initial deployment has been done (the *provider* may use third-party mailing services). There is no good solution for this, except maybe allowing the *providers* to change their SPF and DKIM entries through a platform-exposed API.
  * what must be the `CNAME` target for the test-domains used for this *provider*?
 
-## Questions
+## Questions / topics to tacle / @TODO
 
  * how to handle DNS load balancing accross several CNAMEs?
+ * error samples
+ * logging and auditing?
 
 ## Contributing
 

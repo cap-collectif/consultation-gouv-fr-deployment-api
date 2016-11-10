@@ -1,25 +1,25 @@
-# Standardization proposal for the OGP toolbox consultations deployment API
+# Standardization proposal for the "French consultations portal" deployment API
 
 ## Context
 
-This document is a proposed specification for the deployment APIs that consultation service providers will be required to develop for allowing the OGP toolbox to implement a "one-click instant deploy".
+This document is a proposed specification for the deployment APIs that consultation service providers will be required to develop for allowing the French consultations portal to implement a "one-click instant deploy".
 
 ## Terms & vocabulary
 
- * the "*platform*": the OGP Toolbox platform ;
+ * the "*platform*": the French consultations portal platform ;
  * the "*provider(s)*": the SaaS consultation provider service(s).
 
 ## Proposal
 
 Allowing a smooth yet secure deployment requires a symetric set of APIs:
 
- * one part must be run and maintained by the service provider ([Cap Collectif](https://cap-collectif.com/) for instance, among others) ;
- * the other part must be run by Etalab/OGP, to collect feedback and informations from the service providers.
+ * one part must be run and maintained by the service *provider* ([Cap Collectif](https://cap-collectif.com/) for instance, among others) ;
+ * the other part must be run by the *platform*, to collect feedback and informations from the service providers.
 
-This specification emphazises the "providers" part, but also gives some hints on the "OGP" side:
+This specification emphazises the "providers" part, but also gives some hints on the "*platform*" side:
 
- * [provider.swagger.yml](provider.swagger.yml) lists the set of APIs that should be exposed by the providers. Some of them are quite work-demanding and we cannot therefore expect all this work to be done by the service providers by Decembre 8th, 2016. The *MVP* APIs, required before December 8th, are tagged with the `MVP` tag ;
- * [platform.swagger.yml](platform.swagger.yml) lists the minimal APIs to be exposed by the OGP platform before December 8th, 2016.
+ * [provider.swagger.yml](provider.swagger.yml) lists the set of APIs that should be exposed by the providers. Some of them are quite work-demanding and we cannot therefore expect all this work to be done by the service providers by December 8th, 2016. The *MVP* (Minimum Viable Product) APIs, required before December 8th, are tagged with the `MVP` tag ;
+ * [platform.swagger.yml](platform.swagger.yml) lists the minimal APIs to be exposed by the *platform* before December 8th, 2016.
 
 Some design principles:
 
@@ -32,7 +32,7 @@ Some design principles:
 
 The basic deployment workflow includes several steps:
 
- * 1- a user requests a `example.consultation.gouv.fr` instance on the OGP toolbox website. His request is (email) verified, rate-limited and, if it seems legitimate, the instance creation process is launched ;
+ * 1- a user requests a `example.consultation.gouv.fr` instance on the *platform* website. His request is (email) verified, rate-limited and, if it seems legitimate, the instance creation process is launched ;
  * 2- the *platform* creates the DNS entries, depending on the requirements of the *provider*:
    * a `CNAME` dns entry is created, which links `example.consultation.gouv.fr` to a DNS name given by the provider. **This supposes that all the consultation platforms created through this API will hit the very same front server - which is BAD for scalability. An improved version should allow the provider to change the CNAME target  for each instance through an API (as long as the default CNAME target)**
    * if required by the provider, `SPF` and `DKIM` entries have to be created for `@example.consultation.gouv.fr`. All the outgoing emails will be sent using a `no-reply@example.consultation.gouv.fr` email address.
@@ -62,7 +62,7 @@ In order to reference a *provider*, the *platform* requires several informations
 
  * `api endpoint`: API domain and path ;
  * does the *provider* support custom email-senders? (à la "XYZ@exampleXYZ123.consultation.gouv.fr") If yes:
-   * SPF: the OGP toolbox could either completely use the provider's SPF entries (`v=spf1 redirect=sample.cap-collectif.com`) or choose to include its rules (`v=spf1 include:sample.cap-collectif.com -all`). The latter could allow more flexibility to the *platform* but may have some readibility downsides ;
+   * SPF: the *platform* could either completely use the *provider*'s SPF entries (`v=spf1 redirect=sample.cap-collectif.com`) or choose to include its rules (`v=spf1 include:sample.cap-collectif.com -all`). The latter could allow more flexibility to the *platform* but may have some readibility downsides ;
    * DKIM: this entry can only be added using informations given by the *provider* once the initial deployment has been done (the *provider* may use third-party mailing services). There is no good solution for this, except maybe allowing the *providers* to change their SPF and DKIM entries through a platform-exposed API.
  * what must be the `CNAME` target for the test-domains used for this *provider*?
 

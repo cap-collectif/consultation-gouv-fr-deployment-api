@@ -1,9 +1,9 @@
 swagger: '2.0'
 info:
   version: "0.1.0"
-  title: OGP Toolbox consultation platform endpoints definition, contributed by "Cap Collectif"
+  title: French consultations portal platform endpoints definition, contributed by "Cap Collectif"
   description: >
-    This document defines the API endpoints exposed by the OGP platform for enabling SaaS providers on-demande deployment facilities.
+    This document defines the API endpoints exposed by the French consultations portal platform for enabling SaaS providers on-demand deployment facilities.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
@@ -239,7 +239,7 @@ definitions:
           - running # for running instances
           - failure # if the instance could not be created.
           - terminated # if a termination request has been completed
-      metadata: # various metadata associated to the instance, that the provider considers useful for OGP
+      metadata: # various metadata associated to the instance, that the provider considers useful for the French consultations portal
         type: object
         additionalProperties: {}
   Instances:

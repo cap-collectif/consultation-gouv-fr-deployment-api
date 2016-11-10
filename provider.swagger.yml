@@ -1,9 +1,9 @@
 swagger: '2.0'
 info:
   version: "0.1.0"
-  title: OGP Toolbox consultation platform providers endpoints definition, contributed by "Cap Collectif"
+  title: French consultations portal platform providers endpoints definition, contributed by "Cap Collectif"
   description: >
-    This document defines the API endpoints exposed by consultation providers for the OGP platform, for enabling SaaS providers on-demande deployment facilities.
+    This document defines the API endpoints exposed by consultation providers for the French consultations portal platform, for enabling SaaS providers on-demand deployment facilities.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

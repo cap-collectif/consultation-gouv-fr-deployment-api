@@ -1,13 +1,17 @@
 swagger: '2.0'
 info:
-  version: "0.1.0"
-  title: French consultations portal platform providers endpoints definition, contributed by "Cap Collectif"
+  version: "0.2.0"
+  title: French consultations portal platform providers endpoints definition
   description: >
-    This document defines the API endpoints exposed by consultation providers for the French consultations portal platform, for enabling SaaS providers on-demand deployment facilities.
+    This document defines the minimal API endpoints exposed by consultation solutions providers for the French consultations portal platform, for allowing on-demand deployments. This document has been produced as a collaborative work by [Etalab](https://www.etalab.gouv.fr/), [Cap Collectif](https://cap-collectif.com/) and [Bluenove](http://bluenove.com/).
+      
+    This document specifies the minimal common API set. Each and every data structure specified here may be extended with additionnal metadata. Also, some API navigation mechanisms have not been specified in this document. It is up to each provider to decide whether or not to provide these facilities.
+      
+    Providers API endpoints `MUST` be exposed through https or http2.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
-host: 'api.infrastructure.cap-collectif.com'
+host: 'api.domain.tld'
 basePath: '/'
 schemes:
  - 'https'
@@ -28,78 +32,14 @@ paths:
     get:
       description: |
         Gets the list of instances.
-      parameters:
-        - name: page
-          in: query
-          description: page number
-          required: false
-          type: integer
-          default: 1
-          minimum: 1
-        - name: per_page
-          in: query
-          description: number of items per page
-          required: false
-          type: integer
-          default: 100
-          minimum: 10
-          maximum: 200
-        - name: status
-          in: query
-          required: false
-          description: filter on the "status" field
-          type: string
-          enum:
-            - requested # before the instance is created
-            - running # for running instances
-            - failure # if the instance could not be created.
-            - terminated # if a termination request has been issued
-        - name: createdAt
-          in: query
-          required: false
-          description: filter on the "createdAt" field
-          type: string
-        - name: createdAt_gt
-          in: query
-          required: false
-          description: filter items created after a given date
-          type: string
-        - name: createdAt_gte
-          in: query
-          required: false
-          description: "filter items created after a given date, including this date"
-          type: string
-        - name: createdAt_lt
-          in: query
-          required: false
-          description: filter items created before a given date
-          type: string
-        - name: createdAt_lte
-          in: query
-          required: false
-          description: "filter items created before a given date, including this date"
-          type: string
       security:
         -
           api_key: []
-      tags:
-        - Instances
-        - MVP
       responses:
         200:
           description: Successful response, an array of Instances
           schema:
             $ref: "#/definitions/Instances"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
         default:
           description: Unexpected error
           schema:
@@ -107,35 +47,44 @@ paths:
     post:
       summary: Create a new instance
       description: |
-        Creates a new instance request.
+        Requests the creation of a new instance.
       parameters:
         - name: payload
           in: body
           description: payload representing the instance creation request
           required: true
           schema:
-            $ref: "#/definitions/InstanceCreationRequest"
+            $ref: "#/definitions/InstanceCreationPayload"
       security:
         -
           api_key: []
-      tags:
-        - Instances
-        - MVP
       responses:
-        200:
-          description: The instance creation request, as it has been stored.
+        201:
+          description: The instance (created synchronously)
+          headers:
+            Location:
+              description: URI of the newly created resource
+              type: string
           schema:
             $ref: "#/definitions/Instance"
+        202:
+          description: The instance (asynchronous creation)
           headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
+            Location:
+              description: URI of the newly created resource
+              type: string
+          schema:
+            $ref: "#/definitions/Instance"
+        400:
+          description: >
+            When the request tries to creata an instance for which the slug is already in use, the response should have a HTTP 400 status code, except if the instance status is "`failed`". In that specific case, the instance status will be changed to "`requested`" and the response should use the HTTP 202 status code.
+          schema:
+            $ref: "#/definitions/Error"
+        default:
+          description: >
+            Unexpected error. In the case of an already existing instance (unicity checked on the `slug` InstanceCreationPayload property), the response should be a HTTP 400 status code, except if the instance status is "`failed`". In that specific case, the instance status will be changed to "`requested`". This specific case allows to retry creating an instance when it crashed.
+          schema:
+            $ref: "#/definitions/Error"
   "/instances/{instanceId}":
     get:
       summary: Get the detail of an instance
@@ -150,215 +99,11 @@ paths:
       security:
         -
           api_key: []
-      tags:
-        - Instances
-        - MVP
       responses:
         200:
           description: Successful response, the details of an instance.
           schema:
             $ref: "#/definitions/Instance"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
-        default:
-          description: Unexpected error
-          schema:
-            $ref: "#/definitions/Error"
-  "/instances/{instanceId}/terminations":
-    get:
-      description: |
-        Gets the termination requests for a given instance
-      parameters:
-        - name: instanceId
-          in: path
-          description: id of the instance for which to get the terminations
-          required: true
-          type: string
-          format: uuid
-        - name: page
-          in: query
-          description: page number
-          required: false
-          type: integer
-          default: 1
-          minimum: 1
-        - name: per_page
-          in: query
-          description: number of items per page
-          required: false
-          type: integer
-          default: 100
-          minimum: 10
-          maximum: 200
-        - name: status
-          in: query
-          required: false
-          description: filter on the "status" field
-          type: string
-          enum:
-            - requested # before the instance is terminated
-            - cancelled # if the instance termination was cancelled
-            - completed # if a deletion request has been issued
-        - name: createdAt
-          in: query
-          required: false
-          description: filter on the "createdAt" field
-          type: string
-        - name: createdAt_gt
-          in: query
-          required: false
-          description: filter items created after a given date
-          type: string
-        - name: createdAt_gte
-          in: query
-          required: false
-          description: "filter items created after a given date, including this date"
-          type: string
-        - name: createdAt_lt
-          in: query
-          required: false
-          description: filter items created before a given date
-          type: string
-        - name: createdAt_lte
-          in: query
-          required: false
-          description: "filter items created before a given date, including this date"
-          type: string
-      security:
-        -
-          api_key: []
-      tags:
-        - Instances Terminations
-      responses:
-        200:
-          description: Successful response, an array of instance terminations
-          schema:
-            $ref: "#/definitions/InstanceTerminations"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
-        default:
-          description: Unexpected error
-          schema:
-            $ref: "#/definitions/Error"
-    post:
-      summary: Create a new instance termination request
-      description: |
-        Creates a new termination request for a given instance.
-      parameters:
-        - name: instanceId
-          in: path
-          description: id of the instance to terminate
-          required: true
-          type: string
-          format: uuid
-        - name: payload
-          in: body
-          description: payload representing the instance termination request
-          required: true
-          schema:
-            $ref: "#/definitions/InstanceTerminationRequest"
-      security:
-        -
-          api_key: []
-      tags:
-        - Instances Terminations
-      responses:
-        200:
-          description: The instance termination request, as it has been stored.
-          schema:
-            $ref: "#/definitions/InstanceTermination"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
-  "/instances/{instanceId}/terminations/{terminationId}":
-    delete:
-      summary: Cancels an instance termination request
-      description: >
-        This endpoint allows to delete a given instance termination request.
-      parameters:
-        - name: instanceId
-          in: path
-          description: id of the instance
-          required: true
-          type: string
-          format: uuid
-        - name: terminationId
-          in: path
-          description: id of the instance termination request
-          required: true
-          type: string
-          format: uuid
-      security:
-        -
-          api_key: []
-      tags:
-        - Instances Terminations
-      responses:
-        '204':
-          description: An empty response
-        default:
-          description: Unexpected error
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      summary: Get the detail of an instance termination request
-      description: This endpoint allows to retrieve the details of a given instance termination.
-      parameters:
-        - name: instanceId
-          in: path
-          description: id of the instance
-          required: true
-          type: string
-          format: uuid
-        - name: terminationId
-          in: path
-          description: id of the instance termination request
-          required: true
-          type: string
-          format: uuid
-      security:
-        -
-          api_key: []
-      tags:
-        - Instances Terminations
-      responses:
-        200:
-          description: Successful response, the details of an instance.
-          schema:
-            $ref: "#/definitions/Instance"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
         default:
           description: Unexpected error
           schema:
@@ -366,6 +111,8 @@ paths:
 definitions:
   Error:
     type: object
+    required:
+      - message
     properties:
       message:
         type: string
@@ -374,24 +121,29 @@ definitions:
         additionalProperties: {}
   Instance:
     type: object
+    required:
+      - url
+      - name
+      - adminEmail
+      - adminName
+      - createdAt
     properties:
-      uuid:
+      url:
         type: string
-        format: uuid
-      domain:
+        description: the full url to access the consultation instance
+      name:
         type: string
-      organizationName:
+        description: name of the instance (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+      adminName:
         type: string
+        description: name of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
       adminEmail:
         type: string
         format: email
-      adminName:
+        description: email of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+      requestIdentifier:
         type: string
-      adminPhone:
-        type: string
-      metadata:
-        type: object
-        additionalProperties: {}
+        description: the instance request identifier (generated and provided by the client)
       status:
         type: string
         description: status of the instance
@@ -400,6 +152,12 @@ definitions:
           - running # for running instances
           - failure # if the instance could not be created.
           - terminated # if a termination request has been completed
+      adminPhone:
+        type: string
+        description: phone number of the instance admin user (as provided by the client)
+      adminOrganizationName:
+        type: string
+        description: name of the organization of the admin user (as provided by the client)
       createdAt:
         type: string
         format: date-time
@@ -408,146 +166,52 @@ definitions:
         type: string
         format: date-time
         description: Date and time of the last update of the instance
-  InstanceCreationRequest:
+      metadata:
+        description: some optionnal additionnal metadata, for informational purpose
+        type: object
+        additionalProperties: {}
+  InstanceCreationPayload:
     type: object
     required:
-      - uuid
-      - domain
-      - organizationName
-      - adminEmail
+      - requestIdentifier
+      - name
+      - slug
       - adminName
+      - adminEmail
     properties:
-      uuid:
+      requestIdentifier:
         type: string
-        format: uuid
-      domain:
+        description: Instance creation request identifier, provided by the client. Must be unique.
+      name:
         type: string
-      organizationName:
+        description: "Name of the instance / debate to create."
+      slug:
         type: string
+        description: Slug of the instance to create, which will be used in the subdomain part of as a url path (depending on how the debate gets created)
+      adminName:
+        type: string
+        description: name of the instance admin user
       adminEmail:
         type: string
         format: email
-      adminName:
-        type: string
+        description: email of the instance admin user
       adminPhone:
         type: string
+        description: phone number of the instance admin user
+      adminOrganizationName:
+        type: string
+        description: name of the organization of the admin user
       metadata:
+        description: some optionnal additionnal metadata, for informational purpose
         type: object
         additionalProperties: {}
   Instances:
     type: object
     required:
       - items
-      - page
-      - pageSize
-      - total
     properties:
       items:
         type: array
         description: List of the items
         items:
           $ref: "#/definitions/Instance"
-      total:
-        type: integer
-        minimum: 0
-        default: 1
-        description: Total count of items
-      page:
-        type: integer
-        minimum: 1
-        description: Current page of items
-      pageSize:
-        type: integer
-        minimum: 1
-        description: Number of items per page
-      _links:
-        $ref:  "#/definitions/PaginationLinks"
-  InstanceTermination:
-    type: object
-    properties:
-      uuid:
-        type: string
-        format: uuid
-      instance:
-        $ref: "#/definitions/Instance"
-      reason:
-        type: string
-      status:
-        type: string
-        description: status of the instance
-        enum:
-          - requested # before the instance is terminated
-          - cancelled # if the instance termination was cancelled
-          - completed # if a deletion request has been issued
-      deletionStartAt:
-        type: string
-        format: date-time
-        description: Date and time from when the deletion could happen at any moment. The delay is the choice of the provider, but could be for instance 2 weeks.
-      createdAt:
-        type: string
-        format: date-time
-        description: Date and time of the creation of the instance
-      updatedAt:
-        type: string
-        format: date-time
-        description: Date and time of the last update of the instance
-  InstanceTerminations:
-    type: object
-    required:
-      - items
-      - page
-      - pageSize
-      - total
-    properties:
-      items:
-        type: array
-        description: List of the items
-        items:
-          $ref: "#/definitions/InstanceTermination"
-      total:
-        type: integer
-        minimum: 0
-        default: 1
-        description: Total count of items
-      page:
-        type: integer
-        minimum: 1
-        description: Current page of items
-      pageSize:
-        type: integer
-        minimum: 1
-        description: Number of items per page
-      _links:
-        $ref:  "#/definitions/PaginationLinks"
-  InstanceTerminationRequest:
-    type: object
-    properties:
-      reason:
-        type: string
-  PaginationLinks:
-    type: object
-    required:
-      - self
-      - first
-      - last
-    properties:
-      self:
-        type: string
-        format: uri
-        description: Current page
-      first:
-        type: string
-        format: uri
-        description: First page
-      last:
-        type: string
-        format: uri
-        description: Last page
-      prev:
-        type: string
-        format: uri
-        description: Previous page
-      next:
-        type: string
-        format: uri
-        description: Next page

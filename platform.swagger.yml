@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
-  version: "0.1.0"
-  title: French consultations portal platform endpoints definition, contributed by "Cap Collectif"
+  version: "0.2.0"
+  title: French consultations portal platform endpoints definition
   description: >
     This document defines the API endpoints exposed by the French consultations portal platform for enabling SaaS providers on-demand deployment facilities.
   license:
@@ -28,122 +28,19 @@ paths:
     get:
       description: |
         Gets the list of instances (scoped on the provider associated with the token).
-      parameters:
-        - name: page
-          in: query
-          description: page number
-          required: false
-          type: integer
-          default: 1
-          minimum: 1
-        - name: per_page
-          in: query
-          description: number of items per page
-          required: false
-          type: integer
-          default: 100
-          minimum: 10
-          maximum: 200
-        - name: status
-          in: query
-          required: false
-          description: filter on the "status" field
-          type: string
-          enum:
-            - requested # before the instance is created
-            - running # for running instances
-            - failure # if the instance could not be created.
-            - terminated # if a termination request has been issued
-        - name: createdAt
-          in: query
-          required: false
-          description: filter on the "createdAt" field
-          type: string
-        - name: createdAt_gt
-          in: query
-          required: false
-          description: filter items created after a given date
-          type: string
-        - name: createdAt_gte
-          in: query
-          required: false
-          description: "filter items created after a given date, including this date"
-          type: string
-        - name: createdAt_lt
-          in: query
-          required: false
-          description: filter items created before a given date
-          type: string
-        - name: createdAt_lte
-          in: query
-          required: false
-          description: "filter items created before a given date, including this date"
-          type: string
       security:
         -
           api_key: []
-      tags:
-        - Instances
-        - MVP
       responses:
         200:
           description: Successful response, an array of Instances
           schema:
             $ref: "#/definitions/Instances"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
         default:
           description: Unexpected error
           schema:
             $ref: "#/definitions/Error"
-  "/instances/{instanceId}":
-    get:
-      summary: Get the detail of an instance (scoped on the provider associated with the token).
-      description: This endpoint allows to retrieve the details of a given instance.
-      parameters:
-        - name: instanceId
-          in: path
-          description: id of the instance
-          required: true
-          type: string
-          format: uuid
-      security:
-        -
-          api_key: []
-      tags:
-        - Instances
-        - MVP
-      responses:
-        200:
-          description: Successful response, the details of an instance.
-          schema:
-            $ref: "#/definitions/Instance"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
-        404:
-          description: Inexistant instance, or the instance does not match this provider api key.
-          schema:
-            $ref: "#/definitions/Error"
-        default:
-          description: Unexpected error
-          schema:
-            $ref: "#/definitions/Error"
+  /instances/{instanceId}:
     patch:
       summary: Edit instance informations.
       description: |
@@ -159,34 +56,27 @@ paths:
           format: uuid
         - name: payload
           in: body
-          description: payload representing the instance edition request
+          description: payload representing the instance edition data
           required: true
           schema:
-            $ref: "#/definitions/InstanceEditionRequest"
+            $ref: "#/definitions/InstanceEditionPayload"
       security:
         -
           api_key: []
-      tags:
-        - Instances
-        - MVP
       responses:
         200:
           description: The edited instance
           schema:
             $ref: "#/definitions/Instance"
-          headers:
-            X-Rate-Limit-Limit:
-              description: The number of allowed requests in the current period
-              type: integer
-            X-Rate-Limit-Remaining:
-              description: The number of remaining requests in the current period
-              type: integer
-            X-Rate-Limit-Reset:
-              description: The number of seconds left in the current period
-              type: integer
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/Error"
 definitions:
   Error:
     type: object
+    required:
+      - message
     properties:
       message:
         type: string
@@ -195,24 +85,26 @@ definitions:
         additionalProperties: {}
   Instance:
     type: object
+    required:
+      - id
+      - name
+      - slug
+      - status
+      - adminName
+      - adminEmail
     properties:
-      uuid:
+      id:
         type: string
-        format: uuid
-      domain:
+      name:
         type: string
-      organizationName:
+        description: "Name of the instance / debate to create, as requested by the user."
+      slug:
         type: string
-      adminEmail:
+        description: Slug of the instance to create, which will be used in the subdomain part of as a url path (depending on how the debate gets created).
+      url:
         type: string
-        format: email
-      adminName:
-        type: string
-      adminPhone:
-        type: string
-      metadata:
-        type: object
-        additionalProperties: {}
+        format: url
+        description: complete url where to find the debate
       status:
         type: string
         description: status of the instance
@@ -220,17 +112,27 @@ definitions:
           - requested # before the instance is created
           - running # for running instances
           - failure # if the instance could not be created.
-          - terminated # if a termination request has been issued
-      createdAt:
+          - terminated # if the instance has been terminated
+      adminName:
         type: string
-        format: date-time
-        description: Date and time of the creation of the instance
-      updatedAt:
+        description: name of the instance admin user
+      adminEmail:
         type: string
-        format: date-time
-        description: Date and time of the last update of the instance
-  InstanceEditionRequest:
+        format: email
+        description: email of the instance admin user
+      adminPhone:
+        type: string
+        description: phone number of the instance admin user
+      adminOrganizationName:
+        type: string
+        description: name of the organization of the admin user
+      metadata:
+        type: object
+        additionalProperties: {}
+  InstanceEditionPayload:
     type: object
+    required:
+      - status
     properties:
       status:
         type: string
@@ -246,54 +148,9 @@ definitions:
     type: object
     required:
       - items
-      - page
-      - pageSize
-      - total
     properties:
       items:
         type: array
         description: List of the items
         items:
           $ref: "#/definitions/Instance"
-      total:
-        type: integer
-        minimum: 0
-        default: 1
-        description: Total count of items
-      page:
-        type: integer
-        minimum: 1
-        description: Current page of items
-      pageSize:
-        type: integer
-        minimum: 1
-        description: Number of items per page
-      _links:
-        $ref:  "#/definitions/PaginationLinks"
-  PaginationLinks:
-    type: object
-    required:
-      - self
-      - first
-      - last
-    properties:
-      self:
-        type: string
-        format: uri
-        description: Current page
-      first:
-        type: string
-        format: uri
-        description: First page
-      last:
-        type: string
-        format: uri
-        description: Last page
-      prev:
-        type: string
-        format: uri
-        description: Previous page
-      next:
-        type: string
-        format: uri
-        description: Next page

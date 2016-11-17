@@ -146,16 +146,17 @@ definitions:
         description: the full url to access the consultation instance
       name:
         type: string
-        description: name of the instance (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: name of the instance
       adminName:
         type: string
-        description: name of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: name of the instance admin user
       adminEmail:
         type: string
         format: email
-        description: email of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: email of the instance admin user
       requestIdentifier:
         type: string
+        required: false
         description: the instance request identifier (generated and provided by the client)
       status:
         type: string

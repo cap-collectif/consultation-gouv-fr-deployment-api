@@ -103,7 +103,6 @@ paths:
           description: id of the instance
           required: true
           type: string
-          format: uuid
       security:
         -
           api_key: []

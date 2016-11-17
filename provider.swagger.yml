@@ -121,8 +121,14 @@ definitions:
     required:
       - message
     properties:
+      code:
+        type: integer
+        required: false
+        description: >
+          An agreed upon error code. example: 100 (slug conflict.)
       message:
         type: string
+        example: "slug exists"
       errors:
         type: object
         additionalProperties: {}

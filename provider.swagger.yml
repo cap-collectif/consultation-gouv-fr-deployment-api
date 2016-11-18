@@ -129,9 +129,14 @@ definitions:
     properties:
       code:
         type: integer
-        required: false
         description: >
-          An agreed upon error code. example: 100 (slug conflict.)
+          An error code which describes the error in a non ambiguous way. There are two cases:
+            * a standardized error code has been defined for the error which occured. Standardized error codes always start with digits `1`, `2`, `3`, `4`, `5`, `6`, `7` or `8`. In this case, this error code may be used.
+            * no specific error code has been defined for the error which occured. In this case, the *provider* may include a custom error code. Custom error codes always start with the `9` digit. More specifically, it is forbidden and invalid to use a custom error code starting with another digit than `9`. The *platform* should not expect custom error codes to be robust, durable, standard or identical accross providers. They shall only be used for informational purpose.
+            
+          Here is the list of standardized error codes:
+            * `100`: payload data is invalid
+            * `101`: the slug already exists
       message:
         type: string
         example: "slug exists"

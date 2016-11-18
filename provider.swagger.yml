@@ -83,7 +83,15 @@ paths:
             $ref: "#/definitions/Instance"
         400:
           description: >
-            When the request tries to creata an instance for which the slug is already in use, the response should have a HTTP 400 status code, except if the instance status is "`failed`". In that specific case, the instance status will be changed to "`requested`" and the response should use the HTTP 202 status code.
+            The request cannot be executed, for reasons due to the request that will normally preclude a retry.
+            Examples: slug too long.
+            Special case: If the slug already exists, the answer should be a 400 UNLESS the instance is in a failed state (AND it can be retried.)
+            In that case, retry creating the instance with the same Location as previously, and return a 201, 202 or 500 appropriately.
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: >
+            Internal error. Retrying may be possible.
           schema:
             $ref: "#/definitions/Error"
         default:
@@ -101,7 +109,6 @@ paths:
           description: id of the instance
           required: true
           type: string
-          format: uuid
       security:
         -
           api_key: []
@@ -120,8 +127,14 @@ definitions:
     required:
       - message
     properties:
+      code:
+        type: integer
+        required: false
+        description: >
+          An agreed upon error code. example: 100 (slug conflict.)
       message:
         type: string
+        example: "slug exists"
       errors:
         type: object
         additionalProperties: {}
@@ -139,16 +152,17 @@ definitions:
         description: the full url to access the consultation instance
       name:
         type: string
-        description: name of the instance (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: name of the instance
       adminName:
         type: string
-        description: name of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: name of the instance admin user
       adminEmail:
         type: string
         format: email
-        description: email of the instance admin user (as it was provided by the client, even if it gets altered later in the instance lifecycle)
+        description: email of the instance admin user
       requestIdentifier:
         type: string
+        required: false
         description: the instance request identifier (generated and provided by the client)
       status:
         type: string

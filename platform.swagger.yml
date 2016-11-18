@@ -115,17 +115,17 @@ definitions:
           - terminated # if the instance has been terminated
       adminName:
         type: string
-        description: name of the instance admin user
+        description: name of the instance admin user (may be in sync with the running instance, or as given in the request)
       adminEmail:
         type: string
         format: email
-        description: email of the instance admin user
+        description: email of the instance admin user (may be in sync with the running instance, or as given in the request)
       adminPhone:
         type: string
-        description: phone number of the instance admin user
+        description: phone number of the instance admin user (may be in sync with the running instance, or as given in the request)
       adminOrganizationName:
         type: string
-        description: name of the organization of the admin user
+        description: name of the organization of the admin user (may be in sync with the running instance, or as given in the request)
       metadata:
         type: object
         additionalProperties: {}

@@ -24,10 +24,10 @@ security:
   -
     api_key: [] # The Api Key depends on the provider
 paths:
-  /instances:
+  /instanceRequests:
     get:
       description: |
-        Gets the list of instances (scoped on the provider associated with the token).
+        Gets the list of instance requests (scoped on the provider associated with the token).
       security:
         -
           api_key: []
@@ -40,17 +40,17 @@ paths:
           description: Unexpected error
           schema:
             $ref: "#/definitions/Error"
-  /instances/{instanceId}:
+  /instanceRequests/{id}:
     patch:
-      summary: Edit instance informations.
+      summary: Edit instance request informations.
       description: |
         Changes some instance informations - in particular, the creation status,
         but also the username and other metadata. The API Key used to
         authenticate this request must be associated to the instance provider.
       parameters:
-        - name: instanceId
+        - name: id
           in: path
-          description: id of the instance
+          description: id of the instance request (this is the same as the `requestIdentifier` sent to the provider)
           required: true
           type: string
           format: uuid
@@ -95,6 +95,7 @@ definitions:
     properties:
       id:
         type: string
+        description: "Id if the instance request. This is the same as the `requestIdentifier` sent to the provider"
       name:
         type: string
         description: "Name of the instance / debate to create, as requested by the user."

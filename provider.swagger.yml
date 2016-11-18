@@ -4,9 +4,9 @@ info:
   title: French consultations portal platform providers endpoints definition
   description: >
     This document defines the minimal API endpoints exposed by consultation solutions providers for the French consultations portal platform, for allowing on-demand deployments. This document has been produced as a collaborative work by [Etalab](https://www.etalab.gouv.fr/), [Cap Collectif](https://cap-collectif.com/) and [Bluenove](http://bluenove.com/).
-
+      
     This document specifies the minimal common API set. Each and every data structure specified here may be extended with additionnal metadata. Also, some API navigation mechanisms have not been specified in this document. It is up to each provider to decide whether or not to provide these facilities.
-
+      
     Providers API endpoints `MUST` be exposed through https or http2.
   license:
     name: MIT
@@ -32,6 +32,12 @@ paths:
     get:
       description: |
         Gets the list of instances.
+      parameters:
+        - name: slug
+          in: query
+          required: false
+          description: filter items by slug
+          type: string
       security:
         -
           api_key: []

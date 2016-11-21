@@ -40,7 +40,7 @@ paths:
           description: Unexpected error
           schema:
             $ref: "#/definitions/Error"
-  /instanceRequests/{id}:
+  /instanceRequests/{_id}:
     patch:
       summary: Edit instance request informations.
       description: |
@@ -48,7 +48,7 @@ paths:
         but also the username and other metadata. The API Key used to
         authenticate this request must be associated to the instance provider.
       parameters:
-        - name: id
+        - name: _id
           in: path
           description: id of the instance request (this is the same as the `requestIdentifier` sent to the provider)
           required: true
@@ -86,14 +86,14 @@ definitions:
   Instance:
     type: object
     required:
-      - id
+      - _id
       - name
       - slug
       - status
       - adminName
       - adminEmail
     properties:
-      id:
+      _id:
         type: string
         description: "Id if the instance request. This is the same as the `requestIdentifier` sent to the provider"
       name:
